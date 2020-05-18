@@ -12,52 +12,54 @@ class CalculatorOperator(Enum):
     Divide = 4
 
 class calculatorWidget(QWidget):
-    def __init__(self):
+
+    def __init__(self, plusSignal, minusSignal, multiplySignal, divideSignal, equalSignal, qleSignal):
         super().__init__()
 
-    def initUI(self, plusSignal, minusSignal, multiplySignal, divideSignal, equalSignal, qleSignal):
-        qle = QLineEdit(self)
-        qle.textChanged[str].connect(qleSignal)
+        self.qle = QLineEdit(self)
+        self.qle.textChanged[str].connect(qleSignal)
 
-        plusBtn = QPushButton('+', self)
-        plusBtn.resize(plusBtn.sizeHint())
-        plusBtn.clicked.connect(plusSignal)
+        self.plusBtn = QPushButton('+', self)
+        self.plusBtn.resize(self.plusBtn.sizeHint())
+        self.plusBtn.clicked.connect(plusSignal)
 
-        minusBtn = QPushButton('-', self)
-        minusBtn.resize(minusBtn.sizeHint())
-        minusBtn.clicked.connect(minusSignal)
+        self.minusBtn = QPushButton('-', self)
+        self.minusBtn.resize(self.minusBtn.sizeHint())
+        self.minusBtn.clicked.connect(minusSignal)
 
-        multiplyBtn = QPushButton('*', self)
-        multiplyBtn.resize(multiplyBtn.sizeHint())
-        multiplyBtn.clicked.connect(multiplySignal)
+        self.multiplyBtn = QPushButton('*', self)
+        self.multiplyBtn.resize(self.multiplyBtn.sizeHint())
+        self.multiplyBtn.clicked.connect(multiplySignal)
 
-        divideBtn = QPushButton('/', self)
-        divideBtn.resize(divideBtn.sizeHint())
-        divideBtn.clicked.connect(divideSignal)
+        self.divideBtn = QPushButton('/', self)
+        self.divideBtn.resize(self.divideBtn.sizeHint())
+        self.divideBtn.clicked.connect(divideSignal)
 
-        equalBtn = QPushButton('=', self)
-        equalBtn.resize(equalBtn.sizeHint())
-        equalBtn.clicked.connect(equalSignal)
+        self.equalBtn = QPushButton('=', self)
+        self.equalBtn.resize(self.equalBtn.sizeHint())
+        self.equalBtn.clicked.connect(equalSignal)
 
-        hbox = QHBoxLayout()
-        hbox.addStretch(1)
-        hbox.addWidget(plusBtn)
-        hbox.addWidget(minusBtn)
-        hbox.addWidget(multiplyBtn)
-        hbox.addWidget(divideBtn)
-        hbox.addStretch(1)
+        self.hbox = QHBoxLayout()
+        self.hbox.addStretch(1)
+        self.hbox.addWidget(self.plusBtn)
+        self.hbox.addWidget(self.minusBtn)
+        self.hbox.addWidget(self.multiplyBtn)
+        self.hbox.addWidget(self.divideBtn)
+        self.hbox.addStretch(1)
 
-        vbox = QVBoxLayout()
-        vbox.addStretch(1)
-        vbox.addWidget(qle)
-        vbox.addStretch(1)
-        vbox.addLayout(hbox)
-        vbox.addStretch(1)
-        vbox.addWidget(equalBtn)
-        vbox.addStretch(1)
+        self.vbox = QVBoxLayout()
+        self.vbox.addStretch(1)
+        self.vbox.addWidget(self.qle)
+        self.vbox.addStretch(1)
+        self.vbox.addLayout(self.hbox)
+        self.vbox.addStretch(1)
+        self.vbox.addWidget(self.equalBtn)
+        self.vbox.addStretch(1)
 
-        self.setLayout(vbox)
+        self.setLayout(self.vbox)
 
+    def setQleText(self, text):
+        self.qle.setText(text)
 
 class MyApp(QMainWindow):
     currentValue = 0
@@ -66,9 +68,6 @@ class MyApp(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.initUI()
-
-    def initUI(self):
         self.MakeCalCulatorWidget()
         self.MakeExitMenu()
 
@@ -78,9 +77,8 @@ class MyApp(QMainWindow):
         self.show()
 
     def MakeCalCulatorWidget(self):
-        calculatorInstance = calculatorWidget()
-        calculatorInstance.initUI(self.Plus, self.Minus, self.Multiply, self.Divide, self.Equal, self.onTextChanged)
-        self.setCentralWidget(calculatorInstance)
+        self.calculatorInstance = calculatorWidget(self.Plus, self.Minus, self.Multiply, self.Divide, self.Equal, self.onTextChanged)
+        self.setCentralWidget(self.calculatorInstance)
 
     def MakeExitMenu(self):
         exitAction = QAction(QIcon('exit.png'), 'Exit', self)
@@ -104,36 +102,46 @@ class MyApp(QMainWindow):
         elif self.myOperator is CalculatorOperator.Multiply:
             self.processValue *= self.currentValue
         elif self.myOperator is CalculatorOperator.Divide:
-            self.processValue /= self.currentValue
+            value = self.processValue / self.currentValue
+            self.processValue = int(value)
         else:
             self.processValue = self.currentValue
 
     def Plus(self):
         self.Calculate()
-        self.SetStatusBar(self.processValue)
+        self.currentValue = 0
+        self.calculatorInstance.setQleText(str(self.currentValue))
         self.myOperator = CalculatorOperator.Plus
+        self.SetStatusBar('{} {}'.format(self.processValue, '+'))
 
     def Minus(self):
         self.Calculate()
-        self.SetStatusBar(self.processValue)
+        self.currentValue = 0
+        self.calculatorInstance.setQleText(str(self.currentValue))
         self.myOperator = CalculatorOperator.Minus
+        self.SetStatusBar('{} {}'.format(self.processValue, '-'))
 
     def Multiply(self):
         self.Calculate()
-        self.SetStatusBar(self.processValue)
+        self.currentValue = 0
+        self.calculatorInstance.setQleText(str(self.currentValue))
         self.myOperator = CalculatorOperator.Multiply
+        self.SetStatusBar('{} {}'.format(self.processValue, '*'))
 
     def Divide(self):
         self.Calculate()
-        self.SetStatusBar(self.processValue)
+        self.currentValue = 0
+        self.calculatorInstance.setQleText(str(self.currentValue))
         self.myOperator = CalculatorOperator.Divide
+        self.SetStatusBar('{} {}'.format(self.processValue, '/'))
 
     def Equal(self):
         self.Calculate()
-        self.SetStatusBar()
-        # lineEdit에 입력해야됨
-        self.myOperator = CalculatorOperator.Init
+        self.currentValue = self.processValue
+        self.calculatorInstance.setQleText(str(self.currentValue))
         self.processValue = 0
+        self.myOperator = CalculatorOperator.Init
+        self.SetStatusBar('')
 
     def onTextChanged(self, text):
         self.currentValue = int(text)
